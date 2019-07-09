@@ -118,18 +118,9 @@ buildTransmartCoreApi() {
 	checkExitStatus $? "Gradle build"
 	gradle publishToMavenLocal
 	checkExitStatus $? "Gradle publishToMavenLocal"
-}
-
-installOJDBCDriver() {
-	# Add OJDBC Driver, now required, since i2b2 on Oracle is used.
-	loginfo "Installing ojdbc driver"
-	mvn install:install-file \
-		-DgroupId=com.oracle -DartifactId=ojdbc7 \
-		-Dversion=12.1.0.1 \
-		-Dpackaging=jar \
-		-Dfile=ojdbc7.jar \
-		-DgeneratePom=true
-	checkExitStatus $? "Installed ojdbc7.jar file in maven cache."
+	
+	
+	exit
 }
 
 clean() {
@@ -180,7 +171,6 @@ buildplugins() {
 	check
 
 	loginfo "Clean and rebuild all plugin in local maven cache"
-	installOJDBCDriver
 	buildTransmartCoreApi
 	buildAllGrailsPlugins
 

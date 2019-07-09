@@ -16,12 +16,10 @@ grails.project.dependency.resolution = {
     legacyResolve false
     // whether to do a secondary resolve on plugin installation, not advised and here for backwards compatibility
     repositories {
+        mavenLocal()
         grailsCentral()
         mavenCentral()
-
-//        mavenRepo 'https://repo.transmartfoundation.org/content/repositories/public/'
-        mavenRepo 'http://localhost/content/repositories/public/'
-	mavenRepo 'http://52north.org/maven/repo/releases' // to resolve the excluded gnujaxp dependency
+        mavenRepo 'http://52north.org/maven/repo/releases' // to resolve the excluded gnujaxp dependency
     }
     dependencies {
         // specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes eg.
@@ -43,11 +41,10 @@ grails.project.dependency.resolution = {
 	compile 'org.apache.lucene:lucene-highlighter:2.4.0'
 
 	// runtime 'mysql:mysql-connector-java:5.1.21'
-        runtime 'com.oracle:ojdbc7:12.1.0.1', {
-            export = false
-        }
-
-    }
+  //runtime 'com.oracle:ojdbc7:12.1.0.1', {
+  //    export = false
+  //}
+}
 
     plugins {
 	compile ':asset-pipeline:2.14.1.1'
