@@ -1,19 +1,40 @@
 #!/usr/bin/env bash
 
-export PATH=/usr/local/bin:$PATH
+# check sdk installed versions
+source "$HOME/.sdkman/bin/sdkman-init.sh"
+
+JAVA_VERSION=$(sdk current java | tail -1)
+if [ "${JAVA_VERSION}" = "Using java version 8.0.212-zulu" ];
+then
+	echo "Java version verified"
+else
+	echo "Java version invalid. ${JAVA_VERSION}"
+	exit
+fi
+
+
+GRADLE_VERSION=$(sdk current gradle | tail -1)
+if [ "${GRADLE_VERSION}" = "Using gradle version 4.9" ];
+then
+	echo "Gradle version verified"
+else
+	echo "Gradle version invalid. ${GRADLE_VERSION}"
+	exit
+fi
+
+GRAILS_VERSION=$(sdk current grails | tail -1)
+if [ "${GRAILS_VERSION}" = "Using grails version 2.5.4" ];
+then
+	echo "Grails version verified"
+else
+	echo "Grails version invalid. ${GRAILS_VERSION}"
+	exit
+fi
+
 # This file has to exist in the local filesystem. This is a licensed software
 # that requires an agreement to be signed
 export ORACLE_JDBC_DRIVER_FILE="/Users/gabor/Projects/ojdbc7.jar"
 export INSTALL_DIR=~/git/transmart/
-
-export SDKMAN_DIR="~/.sdkman"
-[[ -s "~/.sdkman/bin/sdkman-init.sh" ]] && source "~/.sdkman/bin/sdkman-init.sh"
-source ~/.zshrc
-
-sdk update
-sdk use grails 2.5.4
-sdk use java 8u111
-sdk use gradle 4.9
 
 # Clean out the local repo
 rm -fR ~/.m2
