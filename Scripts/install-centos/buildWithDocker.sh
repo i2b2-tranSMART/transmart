@@ -20,7 +20,14 @@ runBuild() {
 	docker run -i -t \
 		--volume "${INSTALL_DIR}:/tmp/transmart" \
 		--name transmart-building-container \
-		transmart-builder bash #/tmp/transmart/Scripts/install-centos/buildTransmart.sh
+		transmart-builder /tmp/transmart/Scripts/install-centos/buildTransmart.sh
 }
 
-$*
+if [ $# -eq 0 ];
+then
+	echo "No specific step specified. Will run all steps"
+	createDockerImage
+	runBuild
+else
+	$*
+fi

@@ -1,143 +1,222 @@
-#!/usr/bin/env bash
+#!/bin/sh
+
+SCRIPT_NAME=$0
+
+SDK_JAVA_VERSION=8.0.212-zulu
+SDK_GRAILS_VERSION=2.5.4
+SDK_GRADLE_VERSION=4.9
+
+
+OUTPUT_LOGFILE=local_transmart_release-$(date "+%Y-%m-%d_%H-%M-%S").log
+
+logger() {
+	LEVEL=$(printf "%5s" $1)
+	shift
+  MSG=$*
+	TIMESTAMP=$(date "+%Y-%m-%d %H:%M:%S")
+  echo "${TIMESTAMP} [${LEVEL}] ${MSG}"
+}
+
+loginfo() {
+	logger "INFO" $*
+}
+
+logerror() {
+	logger "ERROR" $*
+}
+
+logdebug() {
+	logger "DEBUG" $*
+}
+
+if [ "${INSTALL_DIR}" == "" ];
+then
+	CURRENT_DIR=$(dirname $SCRIPT_NAME)
+	logdebug "Current Directory is ${CURRENT_DIR}"
+	export INSTALL_DIR=`realpath $(dirname .)/../..`
+	loginfo "INSTALL_DIR variable is not defined. Using ${INSTALL_DIR} instead."
+fi
 
 checkExitStatus() {
-
-	EXIT_STATUS=$1
-	EXIT_MESSAGE=$2
-	
-	if [ $EXIT_STATUS -ne 0 ];
+	STATUS=$1
+	MSG=$2
+	TIMESTAMP=$(date "+%Y-%m-%d %H:%M:%S")
+	if [ ${STATUS} -ne 0 ];
 	then
-		echo "Error ${EXIT_STATUS} while ${EXIT_MESSAGE}"
+		logerror "${MSG}"
 		exit
 	else
-		echo "Finished while ${EXIT_MESSAGE}"
+		loginfo "${MSG}"
 	fi
 }
 
-# check sdk installed versions
-source "$HOME/.sdkman/bin/sdkman-init.sh"
+check() {
+	if [ ! -d $HOME/.sdkman ];
+	then
+		loginfo 'Local SDKMAN directory is not found. Installing SDKMAN now.'
+	else
+		logerror 'Local SDKMAN directory has been found. Updating it.'
+		# Source SDKMAN
+		source "$HOME/.sdkman/bin/sdkman-init.sh"
+		# Update SDKMAN
+		sdk selfupdate force
+	fi
 
-JAVA_VERSION=$(sdk current java | tail -1)
-if [ "${JAVA_VERSION}" = "Using java version 8.0.212-zulu" ];
+	JAVA_VERSION=$(sdk current java | tail -1)
+	if [ "${JAVA_VERSION}" = "Using java version ${SDK_JAVA_VERSION}" ];
+	then
+		loginfo "Java version verified"
+	else
+		logerror "Java version invalid. ${JAVA_VERSION}"
+		loginfo "Installing expected version of java"
+		sdkman_auto_answer=true sdk use java ${SDK_JAVA_VERSION}
+		checkExitStatus $? "installing java version ${SDK_JAVA_VERSION}"
+	fi
+
+	GRADLE_VERSION=$(sdk current gradle | tail -1)
+	if [ "${GRADLE_VERSION}" = "Using gradle version ${SDK_GRADLE_VERSION}" ];
+	then
+		loginfo "Gradle version ${SDK_GRADLE_VERSION} verified"
+	else
+		logerror "Gradle version invalid. ${GRADLE_VERSION}"
+		loginfo "Installing the gradle version ${SDK_GRADLE_VERSION}"
+		sdkman_auto_answer=true sdk use gradle ${SDK_GRADLE_VERSION}
+		checkExitStatus $? "installing gradle version ${SDK_GRADLE_VERSION}"
+	fi
+
+	GRAILS_VERSION=$(sdk current grails | tail -1)
+	if [ "${GRAILS_VERSION}" = "Using grails version ${SDK_GRAILS_VERSION}" ];
+	then
+		loginfo "Grails version ${SDK_GRAILS_VERSION} verified"
+	else
+		loginfo "Installing the grails version ${SDK_GRAILS_VERSION}"
+		sdkman_auto_answer=true sdk use grails ${SDK_GRAILS_VERSION}
+		checkExitStatus $? "installing grails version ${SDK_GRAILS_VERSION}"
+	fi
+
+}
+
+buildTransmartCoreApi() {
+	loginfo 'Build transmart-core-api plugin with Gradle'
+
+	cd ${INSTALL_DIR}/transmart-core-api
+	checkExitStatus $? "Using ${INSTALL_DIR}/transmart-core-api for gradle build."
+
+	# Due to gradle version being behind, this is required for now, otherwise
+	# warning message will instruct you to do this.
+	grep "enableFeaturePreview('STABLE_PUBLISHING')" settings.gradle
+	# Skip adding it if already added
+	if [ $? -ne 0 ];
+	then
+		echo "enableFeaturePreview('STABLE_PUBLISHING')" >> settings.gradle
+	fi
+	gradle build --warning-mode all
+	checkExitStatus $? "Gradle build"
+	gradle publishToMavenLocal
+	checkExitStatus $? "Gradle publishToMavenLocal"
+}
+
+installOJDBCDriver() {
+	# Add OJDBC Driver, now required, since i2b2 on Oracle is used.
+	loginfo "Installing ojdbc driver"
+	mvn install:install-file \
+		-DgroupId=com.oracle -DartifactId=ojdbc7 \
+		-Dversion=12.1.0.1 \
+		-Dpackaging=jar \
+		-Dfile=ojdbc7.jar \
+		-DgeneratePom=true
+	checkExitStatus $? "Installed ojdbc7.jar file in maven cache."
+}
+
+clean() {
+	# Clear out local maven cache
+	rm -fR $HOME/.m2
+}
+
+buildAllGrailsPlugins() {
+	# Order the plugins, based on dependency
+	PLUGIN_DIRS="transmart-java
+	transmart-shared
+	biomart-domain
+	search-domain
+	transmart-core-db
+	transmart-custom
+	transmart-legacy-db
+	folder-management-plugin
+	dalliance-plugin
+	spring-security-auth0
+	Rmodules
+	galaxy-export-plugin
+	transmart-fractalis
+	transmart-gwas-plink
+	transmart-gwas-plugin
+	transmart-metacore-plugin
+	transmart-rest-api
+	transmart-xnat-importer-plugin
+	transmart-xnat-viewer"
+	for PLUGIN_DIR in $PLUGIN_DIRS
+	do
+	  cd ${INSTALL_DIR}/${PLUGIN_DIR}
+	  CURRENT_DIR=`pwd`
+	  loginfo "Building Plugin in ${CURRENT_DIR} directory."
+
+		grails RefreshDependencies
+		checkExitStatus $? "Checking plugin dependencies for ${PLUGIN_DIR}"
+
+	  grails compile
+		checkExitStatus $? "Compiling plugin ${PLUGIN_DIR}"
+
+	  grails maven-install
+		checkExitStatus $? "Installing in local maven cache ${PLUGIN_DIR}"
+
+	done
+}
+
+buildplugins() {
+	check
+
+	loginfo "Clean and rebuild all plugin in local maven cache"
+	installOJDBCDriver
+	buildTransmartCoreApi
+	buildAllGrailsPlugins
+
+	loginfo "Finished building all plugins"
+}
+
+buildtransmart() {
+		cd $INSTALL_DIR/transmartApp
+		grails war
+		checkExitStatus $? "building transmart.war in $(dirname ./target)"
+}
+
+buildall() {
+	buildplugins # This will check `sdkman` and required software
+	buildtransmart
+}
+
+if [ $# -eq 0 ];
 then
-	echo "Java version verified"
-else
-	echo "Java version invalid. ${JAVA_VERSION}"
-	exit
+	echo "\n\nNo parameter is given.\nAt least one parameter is mandatory.\nPlease provide one of the following parameters:"
+	echo "\tclean"
+	echo "\tcheck"
+	echo "\tbuildplugins"
+	echo "\tbuiltransmart"
+	echo "\tbuildall"
+	echo "\n"
 fi
 
+$*
 
-GRADLE_VERSION=$(sdk current gradle | tail -1)
-if [ "${GRADLE_VERSION}" = "Using gradle version 4.9" ];
-then
-	echo "Gradle version verified"
-else
-	echo "Gradle version invalid. ${GRADLE_VERSION}"
-	exit
-fi
-
-GRAILS_VERSION=$(sdk current grails | tail -1)
-if [ "${GRAILS_VERSION}" = "Using grails version 2.5.4" ];
-then
-	echo "Grails version verified"
-else
-	echo "Grails version invalid. ${GRAILS_VERSION}"
-	exit
-fi
-
-# This file has to exist in the local filesystem. This is a licensed software
-# that requires an agreement to be signed
-export ORACLE_JDBC_DRIVER_FILE="ojdbc7.jar"
-
-# Clean out the local repo
-rm -fR ~/.m2
-
-# Add OJDBC Driver, now required, since i2b2 on Oracle is used.
-echo "### Installing ojdbc driver from ${ORACLE_JDBC_DRIVER_FILE} ###"
-mvn install:install-file \
-  -DgroupId=com.oracle -DartifactId=ojdbc7 \
-  -Dversion=12.1.0.1 \
-  -Dpackaging=jar \
-  -Dfile=${ORACLE_JDBC_DRIVER_FILE} \
-  -DgeneratePom=true
-RC=$?
-echo "Completed with ${RC} status"
-
-# This is needed for IapApi compilation, but if I get the pom fixed, then
-# we don't need this.
-#mvn dependency:get -Dartifact=org.apache.logging.log4j:log4j-api:2.6.2
-
-# Transmart Core is a Gradle project
-echo '### Build transmart-core-api plugin with Gradle'
-
-cd ${INSTALL_DIR}/transmart-core-api
-checkExitStatus $? "Using ${INSTALL_DIR}/transmart-core-api for gradle build."
-
-# Due to gradle version being behind, this is required for now, otherwise
-# warning message will instruct you to do this.
-grep "enableFeaturePreview('STABLE_PUBLISHING')" settings.gradle
-# Skip adding it if already added
-if [ $? -ne 0 ];
-then
-	echo "enableFeaturePreview('STABLE_PUBLISHING')" >> settings.gradle
-fi
-gradle build --warning-mode all
-checkExitStatus $? "### Gradle build"
-gradle publishToMavenLocal
-checkExitStatus $? "### Gradle publishToMavenLocal"
-
-# Order the plugins, based on dependency
-PLUGIN_DIRS="transmart-java
-transmart-shared
-biomart-domain
-search-domain
-transmart-core-db
-transmart-custom
-transmart-legacy-db
-folder-management-plugin
-dalliance-plugin
-spring-security-auth0
-Rmodules
-galaxy-export-plugin
-transmart-fractalis
-transmart-gwas-plink
-transmart-gwas-plugin
-transmart-metacore-plugin
-transmart-rest-api
-transmart-xnat-importer-plugin
-transmart-xnat-viewer"
-
-# Note: Unable to build `transmart-core-db-tests` because it uses special Hyve
+# Notes:
+# Unable to build `transmart-core-db-tests` because it uses special Hyve
 # release of gmock library, which is not included, and I could not find it
 # anywhere else.
+# Those were also removed from the main `transmartApp` build dependencies
 
-# Removed 'transmart-mydas', because `Could not find artifact uk.ac.ebi.mydas:mydas:jar:1.7.0.transmart-19.0-SNAPSHOT`
+# Removed 'transmart-mydas', because `Could not find artifact
+# uk.ac.ebi.mydas:mydas:jar:1.7.0.transmart-19.0-SNAPSHOT`
+#
 # TODO:
 # remove `transmart-core-db-tests` from `transmart-rest-api` BuildConfig
-# Update xnat-viewer to use the right Rserve version
 
-# Which one needs Rserve and how we handle ojdbc7.jar file (license), base it on CentOS
-
-for PLUGIN_DIR in $PLUGIN_DIRS
-do
-
-  cd ${INSTALL_DIR}/${PLUGIN_DIR}
-  CURRENT_DIR=`pwd`
-  echo '***********'
-  echo "*** Building Plugin in ${CURRENT_DIR} directory. ***"
-  echo '***********'
-  echo
-  # grails package-plugin
-  grails RefreshDependencies; RC=$?; echo "### grails RefreshDependencies step completed with ${RC} status"
-	checkExitStatus $? "Checking plugin dependencies for ${PLUGIN_DIR}"
-	
-  grails compile; RC=$?; echo "### grails compile step completed with ${RC} status"
-	checkExitStatus $? "Compiling plugin ${PLUGIN_DIR}"
-	
-  grails maven-install; RC=$?; echo "### grails maven-install completed with ${RC} status"
-	checkExitStatus $? "Installing in local maven cache ${PLUGIN_DIR}"
-
-done
-
-cd ${INSTALL_DIR}/transmartApp
-grails war
+# TODO: how we handle ojdbc7.jar file (license)
