@@ -32,14 +32,15 @@ grails.project.dependency.resolution = {
         grailsCentral()
         mavenCentral()
 //        mavenRepo 'https://repo.transmartfoundation.org/content/repositories/public/'
-        mavenRepo 'http://localhost/content/repositories/public/'
+        //mavenRepo 'http://localhost/content/repositories/public/'
     }
 
     dependencies {
  	compile 'com.google.guava:guava:19.0'
         compile 'net.sf.opencsv:opencsv:2.3'
         compile 'org.mapdb:mapdb:0.9.10'
-        compile 'org.rosuda:Rserve:1.7.3'
+        compile 'org.rosuda.REngine:Rserve:1.8.1'
+	//compile 'org.nuiton.thirdparty:REngine:1.7.3'
 	compile 'org.transmartproject:transmart-core-api:19.0-SNAPSHOT'
 //	compile 'com.lowagie:itext:2.0.8' //latest 4.2.2
 //	compile 'org.xhtmlrenderer:core-renderer:R8'

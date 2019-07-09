@@ -7,7 +7,9 @@ Installation of various open source software and also Java are required to run t
 * JAVA (v8) `sdk install java 8u111`
 * GRAILS (v.2.5.4) `sdk install grails 2.5.4`
 * GRADLE (4.9) `sdk install gradle 4.9`
+* MAVEN (latest)
 * TOMCAT (latest) [https://tomcat.apache.org/whichversion.html](https://tomcat.apache.org/whichversion.html)
+
 
 
 ### Prerequisites for docker install
