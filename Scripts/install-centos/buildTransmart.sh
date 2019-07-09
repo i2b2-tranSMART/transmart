@@ -54,13 +54,15 @@ check() {
 	if [ ! -d $HOME/.sdkman ];
 	then
 		loginfo 'Local SDKMAN directory is not found. Installing SDKMAN now.'
+		curl -s https://get.sdkman.io | bash
+		chmod a+x "$HOME/.sdkman/bin/sdkman-init.sh"
 	else
-		logerror 'Local SDKMAN directory has been found. Updating it.'
-		# Source SDKMAN
-		source "$HOME/.sdkman/bin/sdkman-init.sh"
-		# Update SDKMAN
-		sdk selfupdate force
+		loginfo 'Local SDKMAN directory has been found.'
 	fi
+	# Source SDKMAN
+	source "$HOME/.sdkman/bin/sdkman-init.sh"
+	# Update SDKMAN
+	sdk selfupdate force
 
 	JAVA_VERSION=$(sdk current java | tail -1)
 	if [ "${JAVA_VERSION}" = "Using java version ${SDK_JAVA_VERSION}" ];
