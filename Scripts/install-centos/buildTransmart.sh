@@ -32,8 +32,7 @@ logdebug() {
 if [ "${INSTALL_DIR}" == "" ];
 then
 	CURRENT_DIR=$(dirname $SCRIPT_NAME)
-	logdebug "Current Directory is ${CURRENT_DIR}"
-	export INSTALL_DIR=$(realpath $(dirname .)/../..)
+	export INSTALL_DIR=$(realpath ${CURRENT_DIR}/../..)
 	loginfo "INSTALL_DIR variable is not defined. Using ${INSTALL_DIR} instead."
 fi
 
