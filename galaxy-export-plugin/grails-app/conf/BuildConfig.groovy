@@ -16,26 +16,23 @@ grails.project.dependency.resolution = {
         grailsCentral()
         mavenLocal()
         mavenCentral()
-
-//        mavenRepo 'https://repo.transmartfoundation.org/content/repositories/public/'
-        mavenRepo 'http://localhost/content/repositories/public/'
     }
     dependencies {
-        compile 'com.github.jmchilton.blend4j:blend4j:0.1.2' 
+        compile 'com.github.jmchilton.blend4j:blend4j:0.1.2'
 
 	compile 'org.json:json:20090211'
 	test 'org.grails:grails-datastore-test-support:1.0.2-grails-2.4'
 
 	// not included in 18.1 beta
-	runtime 'org.postgresql:postgresql:42.2.2.jre7', {
-            transitive = false
-            export = false
-        }
-        runtime 'com.oracle:ojdbc7:12.1.0.1', {
-            transitive = false
-            export = false
-        }
-    }
+	//runtime 'org.postgresql:postgresql:42.2.2.jre7', {
+  //    transitive = false
+  //    export = false
+  //}
+  //runtime 'com.oracle:ojdbc7:12.1.0.1', {
+  //    transitive = false
+  //    export = false
+  //}
+}
 
     plugins {
 	compile ':asset-pipeline:2.14.1.1'

@@ -57,11 +57,9 @@ grails.project.dependency.resolution = {
 
     if (!dm) {
         repositories {
+          mavenLocal()
             grailsCentral()
             mavenCentral()
-
-//            mavenRepo 'https://repo.transmartfoundation.org/content/repositories/public/'
-            mavenRepo 'http://localhost/content/repositories/public/'
         }
     }
     else {
@@ -72,8 +70,8 @@ grails.project.dependency.resolution = {
         compile 'com.google.protobuf:protobuf-java:2.5.0'
         compile 'org.transmartproject:transmart-core-api:19.0-SNAPSHOT'
 
-        runtime 'org.postgresql:postgresql:42.2.2.jre7', { export = false }
-        runtime 'com.oracle:ojdbc7:12.1.0.1', { export = false }
+        //runtime 'org.postgresql:postgresql:42.2.2.jre7', { export = false }
+        //runtime 'com.oracle:ojdbc7:12.1.0.1', { export = false }
 
 	// not included in 18.1 beta
 	compile 'org.javassist:javassist:3.16.1-GA'

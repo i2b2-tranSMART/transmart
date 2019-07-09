@@ -128,6 +128,24 @@ clean() {
 	rm -fR $HOME/.m2
 }
 
+buildAGrailsPlugin() {
+	PLUGIN_SUBDIR=$1
+	
+  cd ${INSTALL_DIR}/${PLUGIN_SUBDIR}
+  CURRENT_DIR=`pwd`
+  loginfo "Building Plugin in ${CURRENT_DIR} directory."
+
+	grails RefreshDependencies
+	checkExitStatus $? "Checking plugin dependencies for ${PLUGIN_SUBDIR}"
+
+  grails compile
+	checkExitStatus $? "Compiling plugin ${PLUGIN_SUBDIR}"
+
+  grails maven-install
+	checkExitStatus $? "Installing in local maven cache ${PLUGIN_SUBDIR}"
+
+}
+
 buildAllGrailsPlugins() {
 	# Order the plugins, based on dependency
 	PLUGIN_DIRS="transmart-java
@@ -151,40 +169,28 @@ buildAllGrailsPlugins() {
 	transmart-xnat-viewer"
 	for PLUGIN_DIR in $PLUGIN_DIRS
 	do
-	  cd ${INSTALL_DIR}/${PLUGIN_DIR}
-	  CURRENT_DIR=`pwd`
-	  loginfo "Building Plugin in ${CURRENT_DIR} directory."
-
-		grails RefreshDependencies
-		checkExitStatus $? "Checking plugin dependencies for ${PLUGIN_DIR}"
-
-	  grails compile
-		checkExitStatus $? "Compiling plugin ${PLUGIN_DIR}"
-
-	  grails maven-install
-		checkExitStatus $? "Installing in local maven cache ${PLUGIN_DIR}"
-
+		buildAGrailsPlugin $PLUGIN_DIR
 	done
 }
 
 buildplugins() {
 	check
-
 	loginfo "Clean and rebuild all plugin in local maven cache"
 	buildTransmartCoreApi
 	buildAllGrailsPlugins
-
 	loginfo "Finished building all plugins"
 }
 
 buildtransmart() {
-		cd $INSTALL_DIR/transmartApp
-		grails war
-		checkExitStatus $? "building transmart.war in $(dirname ./target)"
+	cd $INSTALL_DIR/transmartApp
+	grails war
+	checkExitStatus $? "building transmart.war in $(dirname ./target)"
 }
 
 buildall() {
-	buildplugins # This will check `sdkman` and required software
+	check
+	buildTransmartCoreApi
+	buildAllGrailsPlugins
 	buildtransmart
 }
 
@@ -193,6 +199,9 @@ then
 	echo "\n\nNo parameter is given.\nAt least one parameter is mandatory.\nPlease provide one of the following parameters:"
 	echo "\tclean"
 	echo "\tcheck"
+	echo "\tbuildAGrailsPlugin <SinglePluginName>"
+	echo "\tbuildTransmartCoreApi"
+	echo "\tbuildAllGrailsPlugins"
 	echo "\tbuildplugins"
 	echo "\tbuiltransmart"
 	echo "\tbuildall"
