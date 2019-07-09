@@ -1,5 +1,19 @@
 #!/usr/bin/env bash
 
+checkExitStatus() {
+
+	EXIT_STATUS=$1
+	EXIT_MESSAGE=$2
+	
+	if [ $EXIT_STATUS -ne 0 ];
+	then
+		echo "Error ${EXIT_STATUS} while ${EXIT_MESSAGE}"
+		exit
+	else
+		echo "Finished while ${EXIT_MESSAGE}"
+	fi
+}
+
 # check sdk installed versions
 source "$HOME/.sdkman/bin/sdkman-init.sh"
 
@@ -33,8 +47,7 @@ fi
 
 # This file has to exist in the local filesystem. This is a licensed software
 # that requires an agreement to be signed
-export ORACLE_JDBC_DRIVER_FILE="/Users/gabor/Projects/ojdbc7.jar"
-export INSTALL_DIR=~/git/transmart/
+export ORACLE_JDBC_DRIVER_FILE="ojdbc7.jar"
 
 # Clean out the local repo
 rm -fR ~/.m2
@@ -56,17 +69,22 @@ echo "Completed with ${RC} status"
 
 # Transmart Core is a Gradle project
 echo '### Build transmart-core-api plugin with Gradle'
+
 cd ${INSTALL_DIR}/transmart-core-api
+checkExitStatus $? "Using ${INSTALL_DIR}/transmart-core-api for gradle build."
+
 # Due to gradle version being behind, this is required for now, otherwise
 # warning message will instruct you to do this.
 grep "enableFeaturePreview('STABLE_PUBLISHING')" settings.gradle
 # Skip adding it if already added
-if [ $RC -ne 0 ];
+if [ $? -ne 0 ];
 then
 	echo "enableFeaturePreview('STABLE_PUBLISHING')" >> settings.gradle
 fi
-gradle build --warning-mode all; RC=$?; echo "### Gradle build completed with ${RC} status"
-gradle publishToMavenLocal; RC=$?; echo "### Gradle publishToMavenLocal completed with ${RC} status"
+gradle build --warning-mode all
+checkExitStatus $? "### Gradle build"
+gradle publishToMavenLocal
+checkExitStatus $? "### Gradle publishToMavenLocal"
 
 # Order the plugins, based on dependency
 PLUGIN_DIRS="transmart-java
@@ -111,8 +129,13 @@ do
   echo
   # grails package-plugin
   grails RefreshDependencies; RC=$?; echo "### grails RefreshDependencies step completed with ${RC} status"
+	checkExitStatus $? "Checking plugin dependencies for ${PLUGIN_DIR}"
+	
   grails compile; RC=$?; echo "### grails compile step completed with ${RC} status"
+	checkExitStatus $? "Compiling plugin ${PLUGIN_DIR}"
+	
   grails maven-install; RC=$?; echo "### grails maven-install completed with ${RC} status"
+	checkExitStatus $? "Installing in local maven cache ${PLUGIN_DIR}"
 
 done
 
