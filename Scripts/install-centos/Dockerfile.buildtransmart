@@ -1,0 +1,21 @@
+FROM centos:latest
+
+RUN cat /etc/os-release
+RUN yum --assumeyes update && \
+    yum --assumeyes install \
+    which \
+    curl \
+    unzip \
+    zip \
+    maven2
+
+# Install SDKMAN first
+RUN curl -s https://get.sdkman.io | bash && \
+  sdk selfupdate force \
+  chmod a+x "$HOME/.sdkman/bin/sdkman-init.sh" && \
+  source "$HOME/.sdkman/bin/sdkman-init.sh"
+
+# Add required libraries
+RUN sdkman_auto_answer=true sdk install java 8.0.212-zulu && \
+  sdkman_auto_answer=true sdk install grails 2.5.4 && \
+  sdkman_auto_answer=true sdk install gradle 4.9
