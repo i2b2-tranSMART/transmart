@@ -99,7 +99,6 @@ grails.project.dependency.resolution = {
     dependencies {
 	compile 'axis:axis:1.4' // for GeneGo web services
 	compile 'com.google.guava:guava:19.0'
-//	compile 'com.google.guava:guava:16.0-dev-20140115-68c8348'
 	compile 'commons-net:commons-net:3.3' // used for ftp transfers
 	compile 'net.sf.ehcache:ehcache:2.9.0'
 	compile 'net.sf.opencsv:opencsv:2.3'
@@ -116,7 +115,6 @@ grails.project.dependency.resolution = {
 	compile 'org.codehaus.groovy.modules.http-builder:http-builder:0.5.2', {
 	    excludes 'groovy', 'nekohtml', 'httpclient', 'httpcore'
 	}
-	compile 'org.rosuda:Rserve:1.7.3'
 	compile('org.springframework.security.extensions:spring-security-saml2-core:1.0.0.RELEASE') {
 	    //excludes of spring security necessary because they are for an older version (3.1 branch)
 	    //also remove xercesImpl because it breaks tomcat and is not otherwise needed
@@ -138,7 +136,7 @@ grails.project.dependency.resolution = {
 	runtime 'org.postgresql:postgresql:42.2.2.jre7'
 	runtime 'com.oracle:ojdbc7:12.1.0.1'
 
-	test 'org.gmock:gmock:0.9.0-r435-hyve2', { transitive = false }
+	//test 'org.gmock:gmock:0.9.0-r435-hyve2', { transitive = false }
 	test 'org.grails:grails-datastore-test-support:1.0.2-grails-2.4'
 	test 'org.hamcrest:hamcrest-core:1.3'
 	test 'org.hamcrest:hamcrest-library:1.3'
@@ -188,13 +186,11 @@ grails.project.dependency.resolution = {
 
 	String tmVersion = '19.0-SNAPSHOT'
 	if (!dm) {
-	    compile ':smart-r:'                   + tmVersion
 	    compile ':rdc-rmodules:'              + tmVersion
 	    compile ':transmart-core:'            + tmVersion
 	    compile ':transmart-gwas:'            + tmVersion
 	    compile ':transmart-gwas-plink:'      + tmVersion
 	    compile ':dalliance-plugin:'          + tmVersion
-	    compile ':transmart-mydas:'           + tmVersion
 	    compile ':transmart-rest-api:'        + tmVersion
 	    compile ':transmart-shared:'          + tmVersion
 	    compile ':spring-security-auth0:'     + tmVersion
@@ -205,7 +201,7 @@ grails.project.dependency.resolution = {
 
 	    compile ':transmart-custom:'          + tmVersion
 	    compile ':transmart-fractalis:'       + tmVersion
-	    test ':transmart-core-db-tests:'      + tmVersion
+	    //test ':transmart-core-db-tests:'      + tmVersion
 
 	    // new transmart modules to be included
 	    //			compile ':transmart-gnome:'           + tmVersion
@@ -224,13 +220,11 @@ grails.project.dependency.resolution = {
 }
 
 dm?.with {
-    configureInternalPlugin 'runtime', 'smart-r'
     configureInternalPlugin 'compile', 'rdc-rmodules'
     configureInternalPlugin 'runtime', 'transmart-core'
     configureInternalPlugin 'compile', 'transmart-gwas'
     configureInternalPlugin 'runtime', 'transmart-gwas-plink'
     configureInternalPlugin 'runtime', 'dalliance-plugin'
-    configureInternalPlugin 'runtime', 'transmart-mydas'
     configureInternalPlugin 'runtime', 'transmart-rest-api'
     configureInternalPlugin 'runtime', 'transmart-shared'
     configureInternalPlugin 'runtime', 'galaxy-export-plugin'
