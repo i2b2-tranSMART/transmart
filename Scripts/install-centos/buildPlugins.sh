@@ -38,7 +38,12 @@ echo '### Build transmart-core-api plugin with Gradle'
 cd ${INSTALL_DIR}/transmart-core-api
 # Due to gradle version being behind, this is required for now, otherwise
 # warning message will instruct you to do this.
-echo "enableFeaturePreview('STABLE_PUBLISHING')" >> settings.gradle
+grep "enableFeaturePreview('STABLE_PUBLISHING')" settings.gradle
+# Skip adding it if already added
+if [ $RC -ne 0 ];
+then
+	echo "enableFeaturePreview('STABLE_PUBLISHING')" >> settings.gradle
+fi
 gradle build --warning-mode all; RC=$?; echo "### Gradle build completed with ${RC} status"
 gradle publishToMavenLocal; RC=$?; echo "### Gradle publishToMavenLocal completed with ${RC} status"
 

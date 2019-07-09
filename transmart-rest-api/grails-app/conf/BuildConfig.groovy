@@ -111,7 +111,7 @@ grails.project.dependency.resolution = {
             compile ':transmart-core:19.0-SNAPSHOT'
             compile ':transmart-shared:19.0-SNAPSHOT'
 
-	    test ':transmart-core-db-tests:19.0-SNAPSHOT'
+	          //test ':transmart-core-db-tests:19.0-SNAPSHOT'
         }
         else {
             dm.internalDependencies delegate
