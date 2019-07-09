@@ -33,7 +33,7 @@ if [ "${INSTALL_DIR}" == "" ];
 then
 	CURRENT_DIR=$(dirname $SCRIPT_NAME)
 	logdebug "Current Directory is ${CURRENT_DIR}"
-	export INSTALL_DIR=`realpath $(dirname .)/../..`
+	export INSTALL_DIR=$(realpath $(dirname .)/../..)
 	loginfo "INSTALL_DIR variable is not defined. Using ${INSTALL_DIR} instead."
 fi
 
@@ -71,7 +71,8 @@ check() {
 	else
 		logerror "Java version invalid. ${JAVA_VERSION}"
 		loginfo "Installing expected version of java"
-		sdkman_auto_answer=true sdk use java ${SDK_JAVA_VERSION}
+		sdkman_auto_answer=true sdk install java ${SDK_JAVA_VERSION}
+		sdk use ${SDK_JAVA_VERSION}
 		checkExitStatus $? "installing java version ${SDK_JAVA_VERSION}"
 	fi
 
@@ -82,7 +83,8 @@ check() {
 	else
 		logerror "Gradle version invalid. ${GRADLE_VERSION}"
 		loginfo "Installing the gradle version ${SDK_GRADLE_VERSION}"
-		sdkman_auto_answer=true sdk use gradle ${SDK_GRADLE_VERSION}
+		sdkman_auto_answer=true sdk install gradle ${SDK_GRADLE_VERSION}
+		sdk use gradle ${SDK_GRADLE_VERSION}
 		checkExitStatus $? "installing gradle version ${SDK_GRADLE_VERSION}"
 	fi
 
@@ -92,7 +94,8 @@ check() {
 		loginfo "Grails version ${SDK_GRAILS_VERSION} verified"
 	else
 		loginfo "Installing the grails version ${SDK_GRAILS_VERSION}"
-		sdkman_auto_answer=true sdk use grails ${SDK_GRAILS_VERSION}
+		sdkman_auto_answer=true sdk install grails ${SDK_GRAILS_VERSION}
+		sdk use ${SDK_GRAILS_VERSION}
 		checkExitStatus $? "installing grails version ${SDK_GRAILS_VERSION}"
 	fi
 
