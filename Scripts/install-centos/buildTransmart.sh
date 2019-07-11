@@ -68,10 +68,10 @@ check() {
 	then
 		loginfo "Java version verified"
 	else
-		logerror "Java version invalid. ${JAVA_VERSION}"
+		logerror "Java version invalid. Currently ${JAVA_VERSION}"
 		loginfo "Installing expected version of java"
 		sdkman_auto_answer=true sdk install java ${SDK_JAVA_VERSION}
-		sdk use ${SDK_JAVA_VERSION}
+		sdk use java ${SDK_JAVA_VERSION}
 		checkExitStatus $? "installing java version ${SDK_JAVA_VERSION}"
 	fi
 

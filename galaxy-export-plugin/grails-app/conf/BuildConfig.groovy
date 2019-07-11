@@ -28,10 +28,10 @@ grails.project.dependency.resolution = {
   //    transitive = false
   //    export = false
   //}
-  //runtime 'com.oracle:ojdbc7:12.1.0.1', {
-  //    transitive = false
-  //    export = false
-  //}
+  runtime 'com.oracle:ojdbc7:12.1.0.1', {
+      transitive = false
+      export = false
+  }
 }
 
     plugins {

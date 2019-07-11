@@ -71,7 +71,7 @@ grails.project.dependency.resolution = {
         compile 'org.transmartproject:transmart-core-api:19.0-SNAPSHOT'
 
         //runtime 'org.postgresql:postgresql:42.2.2.jre7', { export = false }
-        //runtime 'com.oracle:ojdbc7:12.1.0.1', { export = false }
+        runtime 'com.oracle:ojdbc7:12.1.0.1', { export = false }
 
 	// not included in 18.1 beta
 	compile 'org.javassist:javassist:3.16.1-GA'
