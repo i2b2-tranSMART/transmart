@@ -1,5 +1,5 @@
 
-### Prerequisites for local install
+### Prerequisites for local build
 
 Installation of various open source software and also Java are required to run tranSmart on any platform.
  
@@ -10,7 +10,7 @@ Installation of various open source software and also Java are required to run t
 * MAVEN (latest)
 * TOMCAT (latest) [https://tomcat.apache.org/whichversion.html](https://tomcat.apache.org/whichversion.html)
 
-
+Also, the environment variables INSTALL_DIR will need to be set (or the scripts will assume the git repo directory to be the INSTALL_DIR variable)
 
 ### Prerequisites for docker install
 
@@ -18,18 +18,10 @@ In addition to all software that is required on a local installation, docker ins
 
 Install the latest version of docker from docker.com for the appropriate local machine. You can find the instructions on [https://docs.docker.com/](https://docs.docker.com/).
 
-### Build Plugins
-
- Run the script `Scripts/install-centos/buildPlugins.sh` from the main repository, to create a local cache of required plugins.
-
 ### Build tranSMART
 
- Run the script `Scripts/install-centos/buildTransmart.sh` from the *INSTALL_DIR* directory, to create the deployable .war file.
+ Run the script `${INSTALL_DIR}/Scripts/install-centos/buildTransmart.sh` to create the deployable .war file.
 
-### Install `tranSMART`, `solr` and `Rserve`
+### Build With Docker
 
- Copy the generated `transmart.war` file to the local Tomcat _webapps_ directory.
-
-### Create docker image
-
- Run the script `Scripts/install-centos/installDocker.sh` from the *INSTALL_DIR* directory.
+ Run the script `${INSTALL_DIR}/Scripts/install-centos/buildWithDocker.sh` .
