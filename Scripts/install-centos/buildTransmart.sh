@@ -49,6 +49,18 @@ checkExitStatus() {
 	fi
 }
 
+installOJDBCDriver() {
+        # Add OJDBC Driver, now required, since i2b2 on Oracle is used.
+        loginfo "Installing ojdbc driver"
+        mvn install:install-file \
+                -DgroupId=com.oracle -DartifactId=ojdbc7 \
+                -Dversion=12.1.0.1 \
+                -Dpackaging=jar \
+                -Dfile=ojdbc7.jar \
+                -DgeneratePom=true
+        checkExitStatus $? "Installed ojdbc7.jar file in maven cache."
+}
+
 check() {
 	if [ ! -d $HOME/.sdkman ];
 	then
@@ -97,11 +109,13 @@ check() {
 		sdk use ${SDK_GRAILS_VERSION}
 		checkExitStatus $? "installing grails version ${SDK_GRAILS_VERSION}"
 	fi
-
+	installOJDBCDriver
 }
 
 buildTransmartCoreApi() {
 	loginfo 'Build transmart-core-api plugin with Gradle'
+
+	installOJDBCDriver
 
 	cd ${INSTALL_DIR}/transmart-core-api
 	checkExitStatus $? "Using ${INSTALL_DIR}/transmart-core-api for gradle build."
@@ -123,24 +137,23 @@ buildTransmartCoreApi() {
 clean() {
 	# Clear out local maven cache
 	rm -fR $HOME/.m2
+	installOJDBCDriver
 }
 
 buildAGrailsPlugin() {
-	PLUGIN_SUBDIR=$1
-	
+  PLUGIN_SUBDIR=$1
   cd ${INSTALL_DIR}/${PLUGIN_SUBDIR}
   CURRENT_DIR=`pwd`
   loginfo "Building Plugin in ${CURRENT_DIR} directory."
 
-	grails RefreshDependencies
-	checkExitStatus $? "Checking plugin dependencies for ${PLUGIN_SUBDIR}"
+  grails RefreshDependencies
+  checkExitStatus $? "Checking plugin dependencies for ${PLUGIN_SUBDIR}"
 
   grails compile
-	checkExitStatus $? "Compiling plugin ${PLUGIN_SUBDIR}"
+  checkExitStatus $? "Compiling plugin ${PLUGIN_SUBDIR}"
 
   grails maven-install
-	checkExitStatus $? "Installing in local maven cache ${PLUGIN_SUBDIR}"
-
+  checkExitStatus $? "Installing in local maven cache ${PLUGIN_SUBDIR}"
 }
 
 buildAllGrailsPlugins() {
