@@ -31,9 +31,9 @@ grails.project.dependency.resolution = {
     log 'warn' // log level of Ivy resolver, either 'error', 'warn', 'info', 'debug' or 'verbose'
     legacyResolve true
     repositories {
-        grailsCentral()
-        mavenLocal()
-        mavenCentral()
+      mavenLocal()
+      grailsCentral()
+      mavenCentral()
         // uncomment the below to enable remote dependency resolution
         // from public Maven repositories
         //mavenRepo 'http://repository.codehaus.org'
