@@ -118,9 +118,6 @@ buildTransmartCoreApi() {
 	checkExitStatus $? "Gradle build"
 	gradle publishToMavenLocal
 	checkExitStatus $? "Gradle publishToMavenLocal"
-	
-	
-	exit
 }
 
 clean() {
