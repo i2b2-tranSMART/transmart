@@ -29,13 +29,6 @@ logdebug() {
 	logger "DEBUG" $*
 }
 
-if [ "${INSTALL_DIR}" == "" ];
-then
-	CURRENT_DIR=$(dirname $SCRIPT_NAME)
-	export INSTALL_DIR=$(realpath ${CURRENT_DIR}/../..)
-	loginfo "INSTALL_DIR variable is not defined. Using ${INSTALL_DIR} instead."
-fi
-
 checkExitStatus() {
 	STATUS=$1
 	MSG=$2
@@ -49,14 +42,34 @@ checkExitStatus() {
 	fi
 }
 
+if [ "${INSTALL_DIR}" == "" ];
+then
+	CURRENT_DIR=$(dirname $SCRIPT_NAME)
+	export INSTALL_DIR=$(realpath ${CURRENT_DIR}/../..)
+	loginfo "INSTALL_DIR variable is not defined. Using ${INSTALL_DIR} instead."
+fi
+
+# The ojdbc file has to exist on the system, and we are using the variable
+# OJDBC_DRIVER_FILE to point to it.
+if [ "${OJDBC_DRIVER_FILE}" == "" ];
+then
+	checkExitStatus 1 "Variable OJDBC_DRIVER_FILE is empty or missing."
+fi
+
 installOJDBCDriver() {
         # Add OJDBC Driver, now required, since i2b2 on Oracle is used.
         loginfo "Installing ojdbc driver"
+
+				if [ ! -f ${OJDBC_DRIVER_FILE} ];
+				then
+					checkExitStatus 1 "Could not find file that OJDBC_DRIVER_FILE points to."
+				fi
+
         mvn install:install-file \
                 -DgroupId=com.oracle -DartifactId=ojdbc7 \
                 -Dversion=12.1.0.1 \
                 -Dpackaging=jar \
-                -Dfile=ojdbc7.jar \
+                -Dfile=${OJDBC_DRIVER_FILE} \
                 -DgeneratePom=true
         checkExitStatus $? "Installed ojdbc7.jar file in maven cache."
 }
@@ -193,6 +206,9 @@ buildplugins() {
 
 buildtransmart() {
 	cd $INSTALL_DIR/transmartApp
+	CURRENT_DIR=`pwd`
+	echo "Current directory:${CURRENT_DIR}"
+	check
 	grails war
 	checkExitStatus $? "building transmart.war in $(dirname ./target)"
 }
