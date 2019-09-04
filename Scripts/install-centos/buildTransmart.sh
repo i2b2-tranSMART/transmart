@@ -1,8 +1,8 @@
 #!/bin/sh
 
-SCRIPT_NAME=$0
+export SCRIPT_NAME=$0
 
-SDK_JAVA_VERSION=8.0.212-zulu
+SDK_JAVA_VERSION=8.0.222.j9-adpt
 SDK_GRAILS_VERSION=2.5.4
 SDK_GRADLE_VERSION=4.9
 
@@ -53,7 +53,15 @@ fi
 # OJDBC_DRIVER_FILE to point to it.
 if [ "${OJDBC_DRIVER_FILE}" == "" ];
 then
-	checkExitStatus 1 "Variable OJDBC_DRIVER_FILE is empty or missing."
+	loginfo "The variable OJDBC_DRIVER_FILE is empty. Looking for it in default location."
+	SCRIPT_DIR=$(dirname $SCRIPT_NAME)
+	if [ -f "${SCRIPT_DIR}/ojdbc7.jar" ];
+	then
+		loginfo "Found ojdbc7.jar file in ${SCRIPT_DIR} directory. Using it instead"
+		export OJDBC_DRIVER_FILE=${SCRIPT_DIR}/ojdbc7.jar
+	else
+		checkExitStatus 1 "Could not find default file. Please set OJDBC_DRIVER_FILE variable to point to a valid file."
+	fi
 fi
 
 installOJDBCDriver() {
@@ -222,16 +230,24 @@ buildall() {
 
 if [ $# -eq 0 ];
 then
-	echo "\n\nNo parameter is given.\nAt least one parameter is mandatory.\nPlease provide one of the following parameters:"
-	echo "\tclean"
-	echo "\tcheck"
-	echo "\tbuildAGrailsPlugin <SinglePluginName>"
-	echo "\tbuildTransmartCoreApi"
-	echo "\tbuildAllGrailsPlugins"
-	echo "\tbuildplugins"
-	echo "\tbuiltransmart"
-	echo "\tbuildall"
-	echo "\n"
+	tfile=$(mktemp /tmp/buildstep.XXXXXXXXX)
+	cat <<EOT > $tfile
+
+No parameter is given.
+At least one parameter is mandatory.
+
+Please provide one of the following parameters:
+	clean
+	check
+	buildAGrailsPlugin <SinglePluginName>
+	buildTransmartCoreApi
+	buildAllGrailsPlugins
+	buildplugins
+	builtransmart
+	buildall
+
+EOT
+	cat $tfile
 fi
 
 $*

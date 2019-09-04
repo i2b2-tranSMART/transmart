@@ -16,10 +16,10 @@ createDockerImage() {
 runBuild() {
 	# Run the image that will build transmart.war from
 	# current source repo
-	docker rm transmart-building-container
+	docker rm transmart-build-container
 	docker run -i -t \
 		--volume "${INSTALL_DIR}:/tmp/transmart" \
-		--name transmart-building-container \
+		--name transmart-buld-container \
 		transmart-builder /tmp/transmart/Scripts/install-centos/buildTransmart.sh
 }
 
